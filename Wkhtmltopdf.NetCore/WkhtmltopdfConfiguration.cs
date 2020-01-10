@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
@@ -10,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
 namespace Wkhtmltopdf.NetCore
 {
@@ -20,7 +17,7 @@ namespace Wkhtmltopdf.NetCore
         /// <summary>
         /// Setup Rotativa library
         /// </summary>
-        /// <param name="env">The IHostingEnvironment object</param>
+        /// <param name="services">The service collection</param>
         /// <param name="wkhtmltopdfRelativePath">Optional. Relative path to the directory containing wkhtmltopdf. Default is "Rotativa". Download at https://wkhtmltopdf.org/downloads.html</param>
         public static IServiceCollection AddWkhtmltopdf(this IServiceCollection services, string wkhtmltopdfRelativePath = "Rotativa")
         {
@@ -45,14 +42,7 @@ namespace Wkhtmltopdf.NetCore
             services.TryAddTransient<IGeneratePdf, GeneratePdf>();
             services.TryAddSingleton(updateableFileProvider);
 
-            if (services.BuildServiceProvider().GetService<IControllerFactory>() == null)
-            {
-                var _hostingEnvironment = new HostingEnvironment();
-                services.TryAddSingleton<IHostingEnvironment>(_hostingEnvironment);
-                services.AddLogging();
-                services.AddMvc();
-            }
-            services.Configure<RazorViewEngineOptions>(options =>
+            services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
             {
                 options.FileProviders.Add(updateableFileProvider);
             });
