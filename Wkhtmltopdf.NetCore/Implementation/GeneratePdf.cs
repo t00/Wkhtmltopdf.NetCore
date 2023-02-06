@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -20,16 +19,8 @@ namespace Wkhtmltopdf.NetCore
 
         public async Task<byte[]> GetByteArray<T>(string View, T model)
         {
-            try
-            {
-                
-                var html = await _engine.RenderViewToStringAsync(View, model);
-                return GetPDF(html);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var html = await _engine.RenderViewToStringAsync(View, model);
+            return GetPDF(html);
         }
 
         public async Task<IActionResult> GetPdf<T>(string View, T model)
@@ -54,15 +45,8 @@ namespace Wkhtmltopdf.NetCore
 
         public async Task<byte[]> GetByteArrayViewInHtml<T>(string ViewInHtml, T model)
         {
-            try
-            {
-                var view = await _engine.RenderHtmlToStringAsync(ViewInHtml, model);
-                return GetPDF(view);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var view = await _engine.RenderHtmlToStringAsync(ViewInHtml, model);
+            return GetPDF(view);
         }
 
         public void AddView(string path, string viewHTML) => _engine.AddView(path, viewHTML);
