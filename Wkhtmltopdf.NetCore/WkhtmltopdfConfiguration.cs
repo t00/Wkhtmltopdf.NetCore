@@ -8,46 +8,45 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-namespace Wkhtmltopdf.NetCore
+namespace Wkhtmltopdf.NetCore;
+
+public static class WkhtmltopdfConfiguration
 {
-    public static class WkhtmltopdfConfiguration
+    public static string RotativaPath { get; set; }
+
+    /// <summary>
+    /// Setup Rotativa library
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <param name="wkhtmltopdfRelativePath">Optional. Relative path to the directory containing wkhtmltopdf. Default is "Rotativa". Download at https://wkhtmltopdf.org/downloads.html</param>
+    public static IServiceCollection AddWkhtmltopdf(this IServiceCollection services, string wkhtmltopdfRelativePath = "Rotativa")
     {
-        public static string RotativaPath { get; set; }
+        RotativaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkhtmltopdfRelativePath);
 
-        /// <summary>
-        /// Setup Rotativa library
-        /// </summary>
-        /// <param name="services">The service collection</param>
-        /// <param name="wkhtmltopdfRelativePath">Optional. Relative path to the directory containing wkhtmltopdf. Default is "Rotativa". Download at https://wkhtmltopdf.org/downloads.html</param>
-        public static IServiceCollection AddWkhtmltopdf(this IServiceCollection services, string wkhtmltopdfRelativePath = "Rotativa")
+        if (!Directory.Exists(RotativaPath))
         {
-            RotativaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkhtmltopdfRelativePath);
-
-            if (!Directory.Exists(RotativaPath))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    throw new Exception("Folder containing wkhtmltopdf.exe not found, searched for " + RotativaPath);
-                }
-
-                throw new Exception("Folder containing wkhtmltopdf not found, searched for " + RotativaPath);
+                throw new Exception("Folder containing wkhtmltopdf.exe not found, searched for " + RotativaPath);
             }
-            
-            var updateableFileProvider = new UpdateableFileProvider();
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
-            services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-            services.TryAddSingleton<DiagnosticSource>(diagnosticSource);
-            services.TryAddTransient<ITempDataProvider, SessionStateTempDataProvider>();
-            services.TryAddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            services.TryAddTransient<IGeneratePdf, GeneratePdf>();
-            services.TryAddSingleton(updateableFileProvider);
 
-            services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
-            {
-                options.FileProviders.Add(updateableFileProvider);
-            });
-
-            return services;
+            throw new Exception("Folder containing wkhtmltopdf not found, searched for " + RotativaPath);
         }
+            
+        var updateableFileProvider = new UpdateableFileProvider();
+        var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+        services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+        services.TryAddSingleton<DiagnosticSource>(diagnosticSource);
+        services.TryAddTransient<ITempDataProvider, SessionStateTempDataProvider>();
+        services.TryAddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+        services.TryAddTransient<IGeneratePdf, GeneratePdf>();
+        services.TryAddSingleton(updateableFileProvider);
+
+        services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
+        {
+            options.FileProviders.Add(updateableFileProvider);
+        });
+
+        return services;
     }
 }
