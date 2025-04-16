@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Wkhtmltopdf.NetCore;
@@ -11,7 +10,7 @@ public abstract class WkhtmlDriver
     /// <summary>
     /// Converts given URL or HTML string to PDF.
     /// </summary>
-    /// <param name="wkhtmlPath">Path to wkthmltopdf\wkthmltoimage.</param>
+    /// <param name="wkhtmlPath">wkthmltopdf executable path.</param>
     /// <param name="switches">Switches that will be passed to wkhtmltopdf binary.</param>
     /// <param name="html">String containing HTML code that should be converted to PDF.</param>
     /// <returns>PDF as byte array.</returns>
@@ -30,30 +29,10 @@ public abstract class WkhtmlDriver
             html = SpecialCharsEncode(html);
         }
 
-        string rotativaLocation;
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            rotativaLocation = Path.Combine(wkhtmlPath, "Windows", "wkhtmltopdf.exe");
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            rotativaLocation = Path.Combine(wkhtmlPath, "Mac", "wkhtmltopdf");
-        }
-        else
-        {
-            rotativaLocation = Path.Combine(wkhtmlPath, "Linux", "wkhtmltopdf");
-        }
-
-        if (!File.Exists(rotativaLocation))
-        {
-            throw new Exception("wkhtmltopdf not found, searched for " + rotativaLocation);
-        }
-
         var proc = new Process();
         proc.StartInfo = new ProcessStartInfo
         {
-            FileName = rotativaLocation,
+            FileName = wkhtmlPath,
             Arguments = switches,
             UseShellExecute = false,
             RedirectStandardOutput = true,

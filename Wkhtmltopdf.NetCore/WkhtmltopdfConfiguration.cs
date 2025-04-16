@@ -12,27 +12,35 @@ namespace Wkhtmltopdf.NetCore;
 
 public static class WkhtmltopdfConfiguration
 {
-    public static string RotativaPath { get; set; }
+    public static string WkHtmlToPdfPath { get; set; }
 
     /// <summary>
     /// Setup Rotativa library
     /// </summary>
     /// <param name="services">The service collection</param>
-    /// <param name="wkhtmltopdfRelativePath">Optional. Relative path to the directory containing wkhtmltopdf. Default is "Rotativa". Download at https://wkhtmltopdf.org/downloads.html</param>
-    public static IServiceCollection AddWkhtmltopdf(this IServiceCollection services, string wkhtmltopdfRelativePath = "Rotativa")
+    /// <param name="wkHtmlToPdfRelativePath">Optional. Relative path in the root</param>
+    /// <param name="wkHtmlToPdfFileName">Optionsl. WkHtmlToPdf executable name</param>
+    public static IServiceCollection AddWkhtmltopdf(this IServiceCollection services, string wkHtmlToPdfRelativePath = null, string wkHtmlToPdfFileName = null)
     {
-        RotativaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkhtmltopdfRelativePath);
-
-        if (!Directory.Exists(RotativaPath))
+        WkHtmlToPdfPath = string.IsNullOrWhiteSpace(wkHtmlToPdfFileName)
+            ? RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "wkhtmltopdf.exe" : "wkhtmltopdf"
+            : wkHtmlToPdfFileName;
+        if (!string.IsNullOrWhiteSpace(wkHtmlToPdfRelativePath))
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                throw new Exception("Folder containing wkhtmltopdf.exe not found, searched for " + RotativaPath);
+                WkHtmlToPdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkHtmlToPdfRelativePath, "Windows", WkHtmlToPdfPath);
             }
-
-            throw new Exception("Folder containing wkhtmltopdf not found, searched for " + RotativaPath);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                WkHtmlToPdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkHtmlToPdfRelativePath, "Mac", WkHtmlToPdfPath);
+            }
+            else
+            {
+                WkHtmlToPdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, wkHtmlToPdfRelativePath, "Linux", WkHtmlToPdfPath);
+            }
         }
-            
+
         var updateableFileProvider = new UpdateableFileProvider();
         var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();

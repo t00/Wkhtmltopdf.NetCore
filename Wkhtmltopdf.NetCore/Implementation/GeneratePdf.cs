@@ -14,7 +14,7 @@ public class GeneratePdf : AsPdfResultBase, IGeneratePdf
 
     public byte[] GetPDF(string html)
     {
-        return WkhtmlDriver.Convert(WkhtmltopdfConfiguration.RotativaPath, this.GetConvertOptions(), html);
+        return WkhtmlDriver.Convert(WkhtmltopdfConfiguration.WkHtmlToPdfPath, this.GetConvertOptions(), html);
     }
 
     public async Task<byte[]> GetByteArray<T>(string View, T model)
